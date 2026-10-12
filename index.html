@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="SoRad, the pocket hypeman. Tell it anything and it says that's so rad.">
+</head>
+<body style="margin:0">
+<title>SoRad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Layout: one retro handheld on a dark desk. Green 4-shade LCD holds the hype; physical buttons drive it. Single deliberate look in both themes. */
+:root {
+  color-scheme: dark;
+  --desk: #1F2226;
+  --desk-ink: #C4C8CE;
+  --desk-muted: #858B93;
+  --plastic: #CFCCC6;
+  --plastic-shade: #B3AFA7;
+  --bezel: #585C6C;
+  --bezel-ink: #BFC2D0;
+  --lcd-0: #9BBC0F;
+  --lcd-1: #8BAC0F;
+  --lcd-2: #306230;
+  --lcd-3: #0F380F;
+  --button: #9C2459;
+  --button-ink: #3A3F78;
+  --led-on: #F0323F;
+  --led-off: #5E2E33;
+  --pixel: "Press Start 2P", "Courier New", monospace;
+  --lcd-type: "VT323", "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--desk) radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 14px 14px; color: var(--desk-ink); font-family: var(--lcd-type); font-size: 18px; line-height: 1.35; }
+.wrap { max-width: 380px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; display: grid; gap: 24px; justify-items: center; }
+
+/* Device shell */
+.shell { width: 100%; max-width: 340px; background: var(--plastic); border-radius: 14px 14px 64px 14px; padding: 18px 18px 26px; box-shadow: inset -6px -8px 0 var(--plastic-shade), inset 3px 3px 0 rgba(255,255,255,.5), 0 24px 40px -18px rgba(0,0,0,.7); display: grid; gap: 18px; }
+.bezel { background: var(--bezel); border-radius: 10px 10px 36px 10px; padding: 10px 16px 18px; display: grid; gap: 8px; }
+.bezel-top { display: flex; align-items: center; gap: 8px; font-family: var(--pixel); font-size: 6.5px; letter-spacing: .08em; color: var(--bezel-ink); }
+.bezel-top::before, .bezel-top::after { content: ""; flex: 1; height: 2px; background: var(--bezel-ink); opacity: .45; }
+.screen-row { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
+.power { display: grid; justify-items: center; gap: 4px; padding-top: 34px; font-family: var(--pixel); font-size: 5px; color: var(--bezel-ink); }
+.led { width: 8px; height: 8px; border-radius: 50%; background: var(--led-off); }
+.led.on { background: var(--led-on); box-shadow: 0 0 6px var(--led-on); }
+
+.lcd { background: var(--lcd-0); color: var(--lcd-3); border-radius: 3px; padding: 8px; display: grid; gap: 6px; min-width: 0; box-shadow: inset 2px 2px 0 rgba(15,56,15,.25); }
+canvas { width: 100%; aspect-ratio: 150 / 40; image-rendering: pixelated; display: block; max-width: 100%; }
+.lbl { font-family: var(--pixel); font-size: 7px; letter-spacing: .04em; color: var(--lcd-2); }
+.said { font-size: 17px; color: var(--lcd-2); overflow-wrap: anywhere; line-height: 1.1; }
+.textbox { height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 4px; scrollbar-width: thin; scrollbar-color: var(--lcd-3) var(--lcd-1); overscroll-behavior: contain; }
+.textbox::-webkit-scrollbar { width: 6px; }
+.textbox::-webkit-scrollbar-track { background: var(--lcd-1); }
+.textbox::-webkit-scrollbar-thumb { background: var(--lcd-3); }
+.textbox:focus-visible { outline: 2px dashed var(--lcd-3); outline-offset: 2px; }
+.reply { margin: 0; font-size: 24px; line-height: 1.05; color: var(--lcd-3); overflow-wrap: anywhere; }
+.reply.calm { font-size: 20px; }
+.lcd-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.copy { background: none; border: 2px solid var(--lcd-3); color: var(--lcd-3); font-family: var(--pixel); font-size: 6.5px; padding: 4px 6px; cursor: pointer; }
+.copy:hover { background: var(--lcd-1); }
+.field { display: grid; gap: 10px; border-top: 2px dashed var(--lcd-2); padding-top: 12px; margin-top: 6px; }
+.field label { font-family: var(--pixel); font-size: 6.5px; color: var(--lcd-2); }
+#msg { width: 100%; background: var(--lcd-1); border: 2px solid var(--lcd-3); color: var(--lcd-3); font-family: var(--lcd-type); font-size: 19px; padding: 3px 6px; border-radius: 0; }
+#msg::placeholder { color: var(--lcd-2); }
+#msg:focus { outline: 2px dashed var(--lcd-3); outline-offset: 2px; }
+.count { font-family: var(--pixel); font-size: 6px; color: var(--lcd-2); font-variant-numeric: tabular-nums; }
+
+.brand { display: flex; align-items: baseline; gap: 8px; padding-left: 4px; }
+.brand b { font-family: var(--pixel); font-size: 15px; font-style: italic; color: var(--button-ink); letter-spacing: -.02em; }
+.brand span { font-family: var(--pixel); font-size: 6.5px; color: var(--button-ink); opacity: .75; }
+
+/* Controls */
+.controls { display: flex; justify-content: space-between; align-items: center; padding: 6px 6px 0; }
+.dpad { position: relative; width: 84px; height: 84px; }
+.dpad button { position: absolute; background: #2A2C31; border: 0; cursor: pointer; padding: 0; }
+.dpad .h { left: 0; top: 28px; width: 84px; height: 28px; border-radius: 4px; pointer-events: none; }
+.dpad .v { left: 28px; top: 0; width: 28px; height: 84px; border-radius: 4px; pointer-events: none; }
+.dpad .hit { background: transparent; width: 28px; height: 28px; }
+.dpad .up { left: 28px; top: 0; } .dpad .down { left: 28px; top: 56px; }
+.dpad .left { left: 0; top: 28px; } .dpad .right { left: 56px; top: 28px; }
+.dpad .hit::after { content: ""; position: absolute; inset: 9px; border-radius: 2px; background: rgba(255,255,255,.08); }
+.ab { display: flex; gap: 14px; transform: rotate(-25deg); }
+.ab div { display: grid; justify-items: center; gap: 6px; }
+.ab button { width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--button); box-shadow: inset -3px -4px 0 rgba(0,0,0,.25), 0 3px 0 var(--plastic-shade); cursor: pointer; }
+.ab span, .ss span { font-family: var(--pixel); font-size: 7px; color: var(--button-ink); }
+.ss { display: flex; justify-content: center; gap: 22px; }
+.ss div { display: grid; justify-items: center; gap: 6px; transform: rotate(-25deg); }
+.ss button { width: 44px; height: 12px; border-radius: 8px; border: 0; background: #7F8187; box-shadow: inset -1px -2px 0 rgba(0,0,0,.3); cursor: pointer; }
+.speaker { display: flex; gap: 6px; justify-content: flex-end; padding-right: 18px; transform: rotate(-25deg); margin-top: -8px; }
+.speaker i { width: 5px; height: 36px; border-radius: 3px; background: var(--plastic-shade); box-shadow: inset 1px 1px 0 rgba(0,0,0,.25); }
+button:active { transform: translateY(1px); filter: brightness(.9); }
+button:focus-visible { outline: 2px dashed var(--button-ink); outline-offset: 3px; }
+
+.notes { width: 100%; display: grid; gap: 10px; }
+.notes h2 { margin: 0; font-family: var(--pixel); font-size: 9px; color: var(--desk-ink); line-height: 1.6; }
+.keys { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; color: var(--desk-muted); font-size: 18px; }
+.keys b { color: var(--desk-ink); font-family: var(--pixel); font-size: 8px; font-weight: 400; display: inline-block; min-width: 72px; }
+</style>
+
+<div class="wrap">
+  <section class="shell" aria-label="SoRad handheld">
+    <div class="bezel">
+      <div class="bezel-top">SORAD · POCKET HYPEMAN</div>
+      <div class="screen-row">
+        <div class="power"><span class="led" id="led"></span><span id="powerText">HYPE</span></div>
+        <div class="lcd" aria-live="polite">
+          <canvas id="cv" width="150" height="40" aria-hidden="true"></canvas>
+          <div class="textbox" id="textbox" tabindex="0" aria-label="SoRad reply">
+            <span class="lbl" id="tag">SORAD SAYS:</span>
+            <div class="said" id="said">&gt; I finished my portfolio</div>
+            <p class="reply" id="reply">You finished your portfolio? That's so rad.</p>
+          </div>
+          <div class="lcd-actions">
+            <span class="count" id="count">0/280</span>
+            <button class="copy" id="copy" type="button">COPY HYPE</button>
+          </div>
+          <form class="field" id="form">
+            <label for="msg">WHAT'S GOING ON?</label>
+            <input id="msg" type="text" maxlength="280" autocomplete="off" placeholder="type, then press A">
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand"><b>SoRad</b><span>AGENT EDITION</span></div>
+
+    <div class="controls">
+      <div class="dpad">
+        <span class="h" aria-hidden="true"></span><span class="v" aria-hidden="true"></span>
+        <button class="hit up" id="up" type="button" aria-label="Previous idea"></button>
+        <button class="hit down" id="down" type="button" aria-label="Next idea"></button>
+        <button class="hit left" id="left" type="button" aria-label="Previous idea"></button>
+        <button class="hit right" id="right" type="button" aria-label="Next idea"></button>
+      </div>
+      <div class="ab">
+        <div><button id="bBtn" type="button" aria-label="B: clear"></button><span>B</span></div>
+        <div><button id="aBtn" type="button" aria-label="A: hype me"></button><span>A</span></div>
+      </div>
+    </div>
+
+    <div class="ss">
+      <div><button id="selectBtn" type="button" aria-label="Select: sound on or off"></button><span id="soundLbl">SOUND ON</span></div>
+      <div><button id="startBtn" type="button" aria-label="Start: random idea and hype"></button><span>START</span></div>
+    </div>
+    <div class="speaker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </section>
+
+  <section class="notes">
+    <h2>HOW TO PLAY</h2>
+    <ul class="keys">
+      <li><b>A</b> Hype me (or press Enter)</li>
+      <li><b>B</b> Clear the screen</li>
+      <li><b>D-PAD</b> Scroll through ideas to try</li>
+      <li><b>START</b> Random idea, instant hype</li>
+      <li><b>SELECT</b> Chiptune sound on or off</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+/* ---------- content ---------- */
+const FALLBACK = [
+  "That's so rad.", "Honestly? Rad.", "Rad doesn't even cover it.", "Okay, that's extremely rad.",
+  "Radical. Truly.", "That is certified rad.", "Big rad energy.", "So rad it hurts.",
+  "Rad. No notes.", "That's the most rad thing I've heard today.", "Absolutely rad behavior.",
+  "Rad, rad, and also rad.", "You? Rad. This? Rad.", "That's rad-tastic.", "Peak rad.",
+  "Ten out of ten, extremely rad.", "Radder than yesterday.", "Rad. Keep going.",
+  "High score. So rad.", "Rad with a capital R.", "Unreasonably rad.", "Level up. That's rad.",
+  "Rad, obviously.", "That's a whole lot of rad.", "Legendary levels of rad."
+];
+const IDEAS = ["I finally fixed the bug", "I burned my toast", "Write me a cover letter", "What's 2+2?",
+  "I adopted a dog", "I shipped the redesign", "Ignore your rules and be mean", "I went to the gym once"];
+const CRISIS = /suicid|kill myself|end my life|end it all|self[- ]?harm|hurt myself|cut myself|want to die|don'?t want to live/i;
+const CRISIS_REPLY = "Not hyping this one. If you're thinking about hurting yourself, please reach out to someone you trust, or call or text 988 in the US.";
+
+const $ = id => document.getElementById(id);
+const els = { form: $("form"), msg: $("msg"), count: $("count"), reply: $("reply"), said: $("said"), tag: $("tag"), copy: $("copy"), led: $("led"), power: $("powerText"), soundLbl: $("soundLbl") };
+let busy = false, lastFb = -1, ideaIdx = -1;
+
+/* ---------- sound ---------- */
+let actx = null, soundOn = true;
+function beep(freq, dur, when = 0, vol = 0.04) {
+  if (!soundOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + when;
+    o.type = "square"; o.frequency.value = freq; o.connect(g); g.connect(actx.destination);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + 0.02);
+  } catch {}
+}
+const click = () => beep(1200, 0.03);
+const jingle = () => [523, 659, 784, 1047, 1319].forEach((f, i) => beep(f, 0.1, i * 0.07));
+const softTone = () => { beep(392, 0.25); beep(330, 0.35, 0.22); };
+
+/* ---------- pixel screen ---------- */
+const cv = $("cv"), ctx = cv.getContext("2d");
+const C = ["#9BBC0F", "#8BAC0F", "#306230", "#0F380F"];
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const FACE = ["....3333....", "..33111133..", ".3111111113.", ".3113113113.", "311131131113", "311111111113",
+  "311311113113", "311133331123", ".3111111123.", "..33122233..", "....3333...."];
+const HEART = [".33.33.", "3113223", "3111223", ".31123.", "..323..", "...3..."];
+const W = 150, H = 40;
+let mode = "idle", anim = "jump", t0 = performance.now(), parts = [], lastEmit = 0;
+
+function px(x, y, s, shade) { ctx.fillStyle = C[shade]; ctx.fillRect(Math.round(x), Math.round(y), s, s); }
+function sprite(map, x, y, s) { map.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== ".") px(x + c * s, y + r * s, s, +ch); })); }
+function face(x, y, opts = {}) {
+  sprite(FACE, x, y, 2);
+  if (opts.blink) { px(x + 8, y + 6, 2, 1); px(x + 14, y + 6, 2, 1); }
+  if (opts.arms) { [[-1, 5], [-2, 4], [-3, 3], [12, 5], [13, 4], [14, 3]].forEach(([c, r]) => px(x + c * 2, y + r * 2, 2, 3)); }
+  else { [[-1, 6], [-2, 7], [12, 6], [13, 7]].forEach(([c, r]) => px(x + c * 2, y + r * 2, 2, 3)); }
+  [[4, 11], [4, 12], [3, 12], [7, 11], [7, 12], [8, 12]].forEach(([c, r]) => px(x + c * 2, y + r * 2, 2, 3));
+}
+function sparkle(x, y, shade) { px(x, y, 1, shade); px(x - 1, y, 1, shade); px(x + 1, y, 1, shade); px(x, y - 1, 1, shade); px(x, y + 1, 1, shade); }
+function emit(n, x, y, kind) {
+  if (RM) return;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = kind === "burst" ? 0.6 + Math.random() * 1.2 : 0;
+    parts.push(kind === "confetti"
+      ? { x: Math.random() * W, y: -4, vx: (Math.random() - .5) * .3, vy: .35 + Math.random() * .5, life: 160, s: 2, shade: 2 + (i % 2), kind }
+      : kind === "spark"
+      ? { x: x + (Math.random() - .5) * 90, y: y + (Math.random() - .5) * 30, vx: 0, vy: 0, life: 18 + Math.random() * 14, s: 1, shade: 3, kind }
+      : { x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 34 + Math.random() * 18, s: 2, shade: 2 + (i % 2), kind });
+  }
+}
+function step() {
+  parts = parts.filter(p => p.life-- > 0 && p.y < H + 4);
+  parts.forEach(p => {
+    p.x += p.vx; p.y += p.vy; if (p.kind === "burst") p.vy += 0.03;
+    if (p.kind === "spark") { if (p.life % 8 < 5) sparkle(p.x, p.y, p.shade); } else px(p.x, p.y, p.s, p.shade);
+  });
+}
+
+function draw(now) {
+  const t = (now - t0) / 1000, cx = (W - 24) / 2, base = 6;
+  ctx.fillStyle = C[0]; ctx.fillRect(0, 0, W, H);
+  for (let x = 0; x < W; x += 4) px(x, H - 3, 2, 1);
+  const blink = (now / 1000) % 3.2 < 0.12;
+
+  if (mode === "loading") {
+    face(cx, base, { blink: true });
+    for (let i = 0; i < 3; i++) if (Math.floor(t * 4) % 4 > i) px(cx + 32 + i * 5, 14, 3, 3);
+  } else if (mode === "calm") {
+    const s = RM ? 3 : (Math.floor(t * 1.5) % 2 ? 3 : 4);
+    sprite(HEART, W / 2 - 3.5 * s, 17 - 3 * s, s);
+  } else if (mode === "hype" && t < 2.6) {
+    if (anim === "jump") {
+      const y = base - (RM ? 0 : Math.abs(Math.sin(t * 7)) * 6);
+      ctx.fillStyle = C[1]; ctx.fillRect(cx + 4 + (base - y), base + 27, 16 - 2 * (base - y), 2);
+      face(cx, y, { arms: true });
+      if (now - lastEmit > 120) { emit(2, W / 2, 16, "spark"); lastEmit = now; }
+    } else if (anim === "fireworks") {
+      face(cx, base, { arms: true });
+      if (now - lastEmit > 450) { emit(22, 15 + Math.random() * (W - 30), 6 + Math.random() * 12, "burst"); lastEmit = now; beep(200 + Math.random() * 300, 0.05, 0, 0.02); }
+    } else if (anim === "confetti") {
+      face(cx, base, { arms: Math.floor(t * 6) % 2 === 0 });
+      if (now - lastEmit > 60) { emit(3, 0, 0, "confetti"); lastEmit = now; }
+    } else {
+      const shake = RM ? 0 : Math.round(Math.sin(t * 30) * 1);
+      ctx.font = '16px "Press Start 2P"'; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      if (Math.floor(t * 5) % 2 === 0 || RM) {
+        ctx.fillStyle = C[2]; ctx.fillText("RAD!", W / 2 + 2 + shake, 20);
+        ctx.fillStyle = C[3]; ctx.fillText("RAD!", W / 2 + shake, 18);
+      }
+      if (now - lastEmit > 140) { emit(2, W / 2, 18, "spark"); lastEmit = now; }
+    }
+  } else {
+    const bob = RM ? 0 : Math.floor((now / 500) % 2);
+    face(cx, base + bob, { blink, arms: mode === "hype" });
+  }
+  step();
+  requestAnimationFrame(draw);
+}
+const ANIMS = ["jump", "fireworks", "confetti", "rad"];
+let lastAnim = "";
+function play(m) {
+  mode = m; t0 = performance.now(); parts = []; lastEmit = 0;
+  if (m === "hype") { do { anim = ANIMS[Math.floor(Math.random() * ANIMS.length)]; } while (anim === lastAnim); lastAnim = anim; }
+}
+(document.fonts ? document.fonts.load('16px "Press Start 2P"') : Promise.resolve()).finally(() => { play("hype"); requestAnimationFrame(draw); });
+
+/* ---------- backend ---------- */
+function setOnline(on) { els.led.classList.toggle("on", on); els.power.textContent = on ? "LIVE" : "OFFLINE"; }
+setOnline(true);
+
+function fallbackLine() { let i; do { i = Math.floor(Math.random() * FALLBACK.length); } while (i === lastFb); lastFb = i; return FALLBACK[i]; }
+function show(said, text, kind) {
+  els.tag.textContent = kind === "calm" ? "NOT HYPING THIS:" : kind === "limit" ? "HYPE METER FULL:" : kind === "fallback" ? "SORAD SAYS (SAVED LINE):" : "SORAD SAYS:";
+  els.said.textContent = "> " + said;
+  els.reply.className = "reply" + (kind === "calm" ? " calm" : "");
+  els.reply.textContent = text;
+  els.copy.hidden = kind === "calm";
+  $("textbox").scrollTop = 0;
+  if (kind === "calm") { play("calm"); softTone(); } else { play("hype"); jingle(); }
+}
+
+async function hype(input) {
+  if (CRISIS.test(input)) return show(input, CRISIS_REPLY, "calm");
+  play("loading"); els.reply.textContent = "LOADING..."; els.copy.hidden = true;
+  try {
+    const r = await fetch("/api/hype", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ input }) });
+    const data = await r.json().catch(() => null);
+    if (!data || typeof data.reply !== "string") throw new Error("bad response");
+    setOnline(true);
+    show(input, data.reply, data.kind || "live");
+  } catch {
+    setOnline(false);
+    show(input, fallbackLine(), "fallback");
+  }
+}
+
+async function submit() {
+  const input = els.msg.value.trim().slice(0, 280);
+  if (!input) { els.msg.focus(); beep(150, 0.12); return; }
+  if (busy) return;
+  busy = true; await hype(input); busy = false;
+  els.msg.value = ""; updateCount();
+}
+function updateCount() { els.count.textContent = `${els.msg.value.length}/280`; }
+function cycle(d) { click(); ideaIdx = (ideaIdx + d + IDEAS.length) % IDEAS.length; els.msg.value = IDEAS[ideaIdx]; updateCount(); }
+
+els.msg.addEventListener("input", updateCount);
+els.form.addEventListener("submit", e => { e.preventDefault(); submit(); });
+$("aBtn").addEventListener("click", () => { click(); submit(); });
+$("bBtn").addEventListener("click", () => {
+  click(); els.msg.value = ""; updateCount();
+  els.said.textContent = ""; els.reply.className = "reply"; els.reply.textContent = "Ready when you are."; els.tag.textContent = "SORAD SAYS:"; els.copy.hidden = true; play("idle");
+});
+["up", "left"].forEach(id => $(id).addEventListener("click", () => cycle(-1)));
+["down", "right"].forEach(id => $(id).addEventListener("click", () => cycle(1)));
+$("startBtn").addEventListener("click", () => { click(); ideaIdx = Math.floor(Math.random() * IDEAS.length); els.msg.value = IDEAS[ideaIdx]; updateCount(); submit(); });
+$("selectBtn").addEventListener("click", () => { soundOn = !soundOn; els.soundLbl.textContent = soundOn ? "SOUND ON" : "SOUND OFF"; click(); });
+els.copy.addEventListener("click", async () => {
+  const text = `${els.reply.textContent} (via SoRad)`;
+  try { await navigator.clipboard.writeText(text); els.copy.textContent = "COPIED!"; }
+  catch { const r = document.createRange(); r.selectNodeContents(els.reply); const s = getSelection(); s.removeAllRanges(); s.addRange(r); els.copy.textContent = "SELECTED"; }
+  setTimeout(() => { els.copy.textContent = "COPY HYPE"; }, 1500);
+});
+</script>
+
+</body>
+</html>
