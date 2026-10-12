@@ -2,7 +2,7 @@
 
 **The pocket hypeman.** Tell it anything and it tells you that's so rad.
 
-SoRad is a tiny AI agent with exactly one job. You type what's going on, from shipping a redesign to burning your toast, and it hypes you up in a fresh way every time. It lives inside a retro handheld with a green pixel screen, chiptune sounds, and little pixel celebrations.
+SoRad is a tiny AI agent with exactly one job. You type what's going on, from shipping a project to burning your toast, and it hypes you up in a fresh way every time. Just something to delight in this dreary world.
 
 **Try it:** [sorad.netlify.app](https://sorad.netlify.app) <!-- update once the site name is set -->
 
