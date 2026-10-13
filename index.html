@@ -33,8 +33,9 @@
   --lcd-type: "VT323", "Courier New", monospace;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { background: var(--desk) radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 14px 14px; color: var(--desk-ink); font-family: var(--lcd-type); font-size: 18px; line-height: 1.35; }
-.wrap { max-width: 380px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; display: grid; gap: 24px; justify-items: center; }
+.wrap { max-width: 640px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 56px; display: flex; gap: 20px; justify-content: center; align-items: flex-start; }
 
 /* Device shell */
 .shell { width: 100%; max-width: 340px; background: var(--plastic); border-radius: 14px 14px 64px 14px; padding: 18px 18px 26px; box-shadow: inset -6px -8px 0 var(--plastic-shade), inset 3px 3px 0 rgba(255,255,255,.5), 0 24px 40px -18px rgba(0,0,0,.7); display: grid; gap: 18px; }
@@ -93,13 +94,46 @@ canvas { width: 100%; aspect-ratio: 150 / 40; image-rendering: pixelated; displa
 button:active { transform: translateY(1px); filter: brightness(.9); }
 button:focus-visible { outline: 2px dashed var(--button-ink); outline-offset: 3px; }
 
-.notes { width: 100%; display: grid; gap: 10px; }
-.notes h2 { margin: 0; font-family: var(--pixel); font-size: 9px; color: var(--desk-ink); line-height: 1.6; }
-.keys { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; color: var(--desk-muted); font-size: 18px; }
-.keys b { color: var(--desk-ink); font-family: var(--pixel); font-size: 8px; font-weight: 400; display: inline-block; min-width: 72px; }
+.guide { flex: 0 0 auto; width: 230px; background: #2A2E34; border: 2px solid #3A3F46; border-radius: 10px; overflow: hidden; align-self: flex-start; }
+.guide.closed { width: 56px; }
+.guide-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: none; border: 0; color: var(--lcd-0); font-family: var(--pixel); font-size: 9px; line-height: 1.5; padding: 14px; cursor: pointer; text-align: left; }
+.guide-toggle:hover { background: #33383F; }
+.guide.closed .guide-toggle { flex-direction: column-reverse; justify-content: flex-end; padding: 14px 0; gap: 14px; }
+.guide.closed .guide-toggle span:first-child { writing-mode: vertical-rl; transform: rotate(180deg); }
+.guide.closed .arrow { transform: scaleX(-1); }
+.arrow { font-size: 10px; }
+.guide-panel { padding: 0 14px 16px; display: grid; gap: 14px; }
+.keys { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.keys li { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: baseline; color: var(--desk-muted); font-size: 18px; line-height: 1.1; }
+.keys b { color: var(--desk-ink); font-family: var(--pixel); font-size: 8px; font-weight: 400; }
+.guide-note { margin: 0; padding-top: 12px; border-top: 2px dashed #3A3F46; color: var(--desk-muted); font-size: 17px; line-height: 1.15; }
+@media (max-width: 719px) {
+  .wrap { flex-direction: column; align-items: center; }
+  .guide, .guide.closed { width: 100%; max-width: 340px; align-self: center; }
+  .guide.closed .guide-toggle { flex-direction: row; justify-content: space-between; padding: 14px; }
+  .guide.closed .guide-toggle span:first-child { writing-mode: horizontal-tb; transform: none; }
+  .arrow { transform: rotate(90deg); }
+  .guide.closed .arrow { transform: rotate(-90deg); }
+}
 </style>
 
 <div class="wrap">
+  <aside class="guide" id="guide">
+    <button class="guide-toggle" id="guideToggle" type="button" aria-expanded="true" aria-controls="guidePanel">
+      <span>HOW TO PLAY</span><span class="arrow" aria-hidden="true">&#9664;</span>
+    </button>
+    <div class="guide-panel" id="guidePanel">
+      <ul class="keys">
+        <li><b>A</b><span>Hype me (or press Enter)</span></li>
+        <li><b>B</b><span>Clear the screen</span></li>
+        <li><b>D-PAD</b><span>Scroll through ideas to try</span></li>
+        <li><b>START</b><span>Random idea, instant hype</span></li>
+        <li><b>SELECT</b><span>Sound on or off</span></li>
+      </ul>
+      <p class="guide-note">Tell it anything. It only knows one thing to say, and it means it every time.</p>
+    </div>
+  </aside>
+
   <section class="shell" aria-label="SoRad handheld">
     <div class="bezel">
       <div class="bezel-top">SORAD · POCKET HYPEMAN</div>
@@ -147,16 +181,6 @@ button:focus-visible { outline: 2px dashed var(--button-ink); outline-offset: 3p
     <div class="speaker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </section>
 
-  <section class="notes">
-    <h2>HOW TO PLAY</h2>
-    <ul class="keys">
-      <li><b>A</b> Hype me (or press Enter)</li>
-      <li><b>B</b> Clear the screen</li>
-      <li><b>D-PAD</b> Scroll through ideas to try</li>
-      <li><b>START</b> Random idea, instant hype</li>
-      <li><b>SELECT</b> Chiptune sound on or off</li>
-    </ul>
-  </section>
 </div>
 
 <script>
@@ -339,6 +363,15 @@ els.copy.addEventListener("click", async () => {
   catch { const r = document.createRange(); r.selectNodeContents(els.reply); const s = getSelection(); s.removeAllRanges(); s.addRange(r); els.copy.textContent = "SELECTED"; }
   setTimeout(() => { els.copy.textContent = "COPY HYPE"; }, 1500);
 });
+/* ---------- how to play sidebar ---------- */
+(() => {
+  const guide = $("guide"), btn = $("guideToggle"), panel = $("guidePanel");
+  let open = window.innerWidth >= 720;
+  try { const saved = localStorage.getItem("sorad-guide"); if (saved !== null) open = saved === "open"; } catch {}
+  const apply = () => { guide.classList.toggle("closed", !open); panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); };
+  apply();
+  btn.addEventListener("click", () => { open = !open; apply(); click(); try { localStorage.setItem("sorad-guide", open ? "open" : "closed"); } catch {} });
+})();
 </script>
 
 </body>
