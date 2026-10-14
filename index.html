@@ -76,7 +76,7 @@ canvas { width: 100%; aspect-ratio: 150 / 40; image-rendering: pixelated; displa
 #msg:focus { outline: 2px dashed var(--lcd-3); outline-offset: 2px; }
 .count { font-family: var(--pixel); font-size: 6px; color: var(--lcd-2); font-variant-numeric: tabular-nums; }
 
-.brand { display: flex; align-items: baseline; gap: 8px; padding-left: 4px; }
+.brand { display: flex; align-items: center; gap: 10px; padding-left: 4px; }
 .brand b { font-family: var(--pixel); font-size: 15px; font-style: italic; color: var(--button-ink); letter-spacing: -.02em; }
 .brand span { font-family: var(--pixel); font-size: 6.5px; color: var(--button-ink); opacity: .75; }
 
@@ -101,11 +101,12 @@ canvas { width: 100%; aspect-ratio: 150 / 40; image-rendering: pixelated; displa
 .ss { display: flex; justify-content: center; gap: 22px; }
 .ss div { display: grid; justify-items: center; gap: 6px; transform: rotate(-25deg); }
 .ss button { width: 44px; height: 12px; border-radius: 8px; border: 0; background: #7F8187; box-shadow: inset -1px -2px 0 rgba(0,0,0,.3); cursor: pointer; }
-.speaker { display: flex; gap: 6px; justify-content: flex-end; align-items: center; padding: 6px 18px 6px 6px; transform: rotate(-25deg); margin: -8px 0 0 auto; background: none; border: 0; cursor: pointer; position: relative; }
-.speaker #soundLbl { position: absolute; right: 18px; bottom: -14px; font-family: var(--pixel); font-size: 6px; color: var(--button-ink); opacity: .7; white-space: nowrap; }
-.speaker.off i { opacity: .45; }
-.mode-lbl { padding: 3px 5px; border-radius: 3px; }
-.roast .mode-lbl { background: var(--button); color: #F4E9EE; opacity: 1; }
+.speaker { display: flex; gap: 6px; justify-content: flex-end; padding: 0 44px 12px 0; transform: rotate(-25deg); margin-top: 10px; }
+.mode-lbl { font-family: var(--pixel); font-size: 7px; line-height: 1; letter-spacing: .04em; color: #F2F4FB; background: #3557B7; border: 0; border-radius: 3px; padding: 5px 7px; cursor: pointer; box-shadow: 0 2px 0 var(--plastic-shade); }
+.brand .mode-lbl span { font: inherit; color: inherit; opacity: 1; letter-spacing: inherit; }
+.mode-lbl:hover { filter: brightness(1.1); }
+.mode-lbl:active { transform: translateY(1px); box-shadow: none; }
+.roast .mode-lbl { background: var(--button); color: #F4E9EE; }
 .roast .led.on { background: #FFB020; box-shadow: 0 0 6px #FFB020; }
 .speaker i { width: 5px; height: 36px; border-radius: 3px; background: var(--plastic-shade); box-shadow: inset 1px 1px 0 rgba(0,0,0,.25); }
 button:active { transform: translateY(1px); filter: brightness(.9); }
@@ -158,7 +159,7 @@ button, input { touch-action: manipulation; -webkit-tap-highlight-color: transpa
   .ab button { width: 62px; height: 62px; }
   .ss { gap: 30px; }
   .ss button { width: 58px; height: 16px; }
-  .speaker { margin-top: -4px; }
+  .speaker { margin-top: 22px; padding-right: 44px; }
   .speaker i { height: 30px; }
 
   /* How to play: a small chip at the top that opens over the device */
@@ -189,8 +190,7 @@ button, input { touch-action: manipulation; -webkit-tap-highlight-color: transpa
   .dpad .center { left: 34px; top: 34px; }
   .dpad .left { top: 34px; } .dpad .right { left: 68px; top: 34px; }
   .ab button { width: 54px; height: 54px; }
-  .speaker i { display: none; }
-  .speaker #soundLbl { position: static; }
+  .speaker { display: none; }
 }
 
 /* Short phones in landscape: let the page scroll instead of squashing the device */
@@ -213,8 +213,8 @@ button, input { touch-action: manipulation; -webkit-tap-highlight-color: transpa
         <li><b>MIDDLE</b><span>Surprise celebration</span></li>
         <li><b>LEFT / RIGHT</b><span>Scroll through ideas to try</span></li>
         <li><b>START</b><span>Random idea, instant hype</span></li>
-        <li><b>SELECT</b><span>Switch Hype or Roast mode</span></li>
-        <li><b>SPEAKER</b><span>Tap the grille for sound on or off</span></li>
+        <li><b>MODE BADGE</b><span>Tap HYPE MODE / ROAST MODE to switch</span></li>
+        <li><b>SELECT</b><span>Sound on or off</span></li>
       </ul>
       <p class="guide-note">Hype mode cheers you on. Roast mode teases you first, then admits you're doing great.</p>
     </div>
@@ -244,7 +244,7 @@ button, input { touch-action: manipulation; -webkit-tap-highlight-color: transpa
       </div>
     </div>
 
-    <div class="brand"><b>SoRad</b><span id="modeLbl" class="mode-lbl">HYPE MODE</span></div>
+    <div class="brand"><b>SoRad</b><button id="modeBtn" class="mode-lbl" type="button" aria-label="Switch between hype and roast mode" title="Switch mode"><span id="modeLbl">HYPE MODE</span></button></div>
 
     <div class="controls">
       <div class="dpad">
@@ -262,10 +262,10 @@ button, input { touch-action: manipulation; -webkit-tap-highlight-color: transpa
     </div>
 
     <div class="ss">
-      <div><button id="selectBtn" type="button" aria-label="Select: switch between hype and roast mode" aria-pressed="false"></button><span>SELECT</span></div>
+      <div><button id="selectBtn" type="button" aria-label="Select: sound on or off" aria-pressed="true"></button><span id="soundLbl">SOUND ON</span></div>
       <div><button id="startBtn" type="button" aria-label="Start: random idea and hype"></button><span>START</span></div>
     </div>
-    <button class="speaker" id="speaker" type="button" aria-label="Sound on or off" aria-pressed="true"><i></i><i></i><i></i><i></i><i></i><i></i><span id="soundLbl">SOUND ON</span></button>
+    <div class="speaker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </section>
 
 </div>
@@ -484,11 +484,11 @@ function applyMode() {
   document.body.classList.toggle("roast", roast);
   $("modeLbl").textContent = roast ? "ROAST MODE" : "HYPE MODE";
   $("bezelTop").textContent = roast ? "SORAD · POCKET ROASTER" : "SORAD · POCKET HYPEMAN";
-  $("selectBtn").setAttribute("aria-pressed", String(roast));
+  $("modeBtn").setAttribute("aria-pressed", String(roast));
   els.msg.placeholder = roast ? "go on, impress me" : "type, then press A";
 }
 applyMode();
-$("selectBtn").addEventListener("click", () => {
+$("modeBtn").addEventListener("click", () => {
   voice = voice === "roast" ? "hype" : "roast";
   try { localStorage.setItem("sorad-mode", voice); } catch {}
   applyMode(); modeChirp(); buzz(15);
@@ -498,9 +498,9 @@ $("selectBtn").addEventListener("click", () => {
   els.reply.textContent = voice === "roast" ? "Fine. Tell me something. I'll try not to be impressed." : "Back to full hype. Tell me anything.";
   els.copy.hidden = true; play("idle");
 });
-$("speaker").addEventListener("click", () => {
+$("selectBtn").addEventListener("click", () => {
   soundOn = !soundOn; els.soundLbl.textContent = soundOn ? "SOUND ON" : "SOUND OFF";
-  $("speaker").classList.toggle("off", !soundOn); $("speaker").setAttribute("aria-pressed", String(soundOn)); click();
+  $("selectBtn").setAttribute("aria-pressed", String(soundOn)); click();
 });
 els.copy.addEventListener("click", async () => {
   const text = `${els.reply.textContent} (via SoRad)`;

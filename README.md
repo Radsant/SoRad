@@ -42,7 +42,7 @@ The API key stays in Netlify's environment variables. It is never sent to the br
 
 **Built for thumbs.** On phones the handheld fills the screen, the buttons sit at thumb height, the phone buzzes on each hype (Android), and it can be added to the home screen like an app.
 
-**Nostalgia over polish.** Four shades of green, pixel type, physical buttons, and sound you can turn off by tapping the speaker grille. The animations are drawn live on a canvas, so they match the screen instead of looking like pasted-in GIFs.
+**Nostalgia over polish.** Four shades of green, pixel type, physical buttons, and sound you can turn off with SELECT. The animations are drawn live on a canvas, so they match the screen instead of looking like pasted-in GIFs.
 
 ## Controls
 
@@ -54,8 +54,8 @@ The API key stays in Netlify's environment variables. It is never sent to the br
 | D-pad middle | Replay a random celebration |
 | D-pad left / right | Scroll through ideas to try |
 | START | Random idea, instant hype |
-| SELECT | Switch between Hype and Roast mode |
-| Speaker grille | Sound on or off |
+| Mode badge (HYPE MODE / ROAST MODE) | Switch between Hype and Roast mode |
+| SELECT | Sound on or off |
 
 ## Files
 
