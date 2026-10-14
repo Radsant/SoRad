@@ -38,7 +38,11 @@ The API key stays in Netlify's environment variables. It is never sent to the br
 
 **It's hard to run up a bill.** The backend only accepts requests from this site, limits how often each visitor can call it, and caps how long replies can be. The real cost cap is a monthly spend limit on the API account.
 
-**Nostalgia over polish.** Four shades of green, pixel type, physical buttons, and sound you can turn off with SELECT. The animations are drawn live on a canvas, so they match the screen instead of looking like pasted-in GIFs.
+**Two voices.** Hype mode cheers you on. Roast mode gives a playful roast, an unexpected compliment, then reluctant encouragement. It roasts the situation, never the person, and drops the roast entirely when someone sounds hurt.
+
+**Built for thumbs.** On phones the handheld fills the screen, the buttons sit at thumb height, the phone buzzes on each hype (Android), and it can be added to the home screen like an app.
+
+**Nostalgia over polish.** Four shades of green, pixel type, physical buttons, and sound you can turn off by tapping the speaker grille. The animations are drawn live on a canvas, so they match the screen instead of looking like pasted-in GIFs.
 
 ## Controls
 
@@ -46,9 +50,12 @@ The API key stays in Netlify's environment variables. It is never sent to the br
 | --- | --- |
 | A or Enter | Hype me |
 | B | Clear the screen |
-| D-pad | Scroll through ideas to try |
+| D-pad up / down | Replay the RAD! or the confetti (arrow keys work too) |
+| D-pad middle | Replay a random celebration |
+| D-pad left / right | Scroll through ideas to try |
 | START | Random idea, instant hype |
-| SELECT | Sound on or off |
+| SELECT | Switch between Hype and Roast mode |
+| Speaker grille | Sound on or off |
 
 ## Files
 
@@ -57,6 +64,7 @@ The API key stays in Netlify's environment variables. It is never sent to the br
 | `index.html` | The handheld page: layout, pixel animations, sound |
 | `netlify/functions/hype.mjs` | The backend: persona prompt, safety checks, rate limit, fallback lines |
 | `netlify.toml` | Tells Netlify where the page and the function live |
+| `manifest.webmanifest`, `icon-*.png` | Lets people add SoRad to their phone's home screen as an app |
 
 ## Run your own
 
@@ -69,7 +77,6 @@ Optional environment variables: `MODEL` to use a different Claude model, and `AL
 
 ## What's next
 
-- A full-screen mobile layout
 - A Chrome extension version
 - An embedded demo on radhikasant.com
 
